@@ -1,30 +1,20 @@
 import time
-from selenium import webdriver
 from bs4 import BeautifulSoup
 import requests
 import smtplib
 
-class ScrapingBrowser(webdriver.Chrome):
-	def __init__(self, addr, *args, **kwargs):
-		super(ScrapingBrowser, self).__init__(*args, **kwargs)
-		self.implicitly_wait(6)
-		self.get(addr)
-
-	def click_xpath(self, location):
-		self.find_element_by_xpath(location).click()
-
-def getClosedCases(path):
+def getClosedCases():
 	closed = []
-	fd = open(path + 'closed_requests.txt', 'r')
+	fd = open('closed_requests.txt', 'r')
 	for line in fd:
 		closed.append(line.rstrip('\n'))
 	fd.close()
 	return closed
 
-def go(path):
+def go():
 	new_requests = []
 	email_body = ""
-	closed = getClosedCases(path)
+	closed = getClosedCases()
 	soup = getSoup('https://sandiego.nextrequest.com/requests')
 	lastPageURL = soup.find("ul", {"class":"pagination"}).findAll("li")[-1].a['href']
 	numPages = int(lastPageURL.split('=')[-1])
@@ -35,7 +25,7 @@ def go(path):
 	if numRequests > 0: 
 		send_email(email_body, numRequests)
 	for idNum in new_requests:
-		fd = open(path + 'closed_requests.txt', 'a')
+		fd = open('closed_requests.txt', 'a')
 		fd.write(idNum + '\n')
 
 def compare(pageNum, closed, new_requests, email_body):
@@ -88,9 +78,9 @@ def getSoup(url):
 	return soup
 
 def send_email(body, ctr):
-	for toaddr in ['kenny.jacoby@nbcuni.com', 'TomJ@nbcuni.com', 'JW.August@nbcuni.com', 'Paul.Krueger@nbcuni.com', 'Lynn.walsh@nbcuni.com', 'Mari.Payton@nbcuni.com', 'Jay.Yoo@nbcuni.com']:
-		fromaddr = 'scrapingkj@gmail.com'
-		pwd = 'kjscraping'
+	for toaddr in ['list', 'of', 'email,' 'addresses', 'here']:
+		fromaddr = 'your gmail address here'
+		pwd = 'your gmail password here'
 		msg = "\r\n".join([
 			"From: {}".format(fromaddr),
 			"To: {}".format(toaddr),
@@ -107,9 +97,8 @@ def send_email(body, ctr):
 	print('\nEmail sent!')
 
 def main():
-	path = "/Users/kennyjacoby/Documents/scrapers/"
 	start_time = time.time()
-	go(path)
+	go()
 	print('\n{} minutes, {} seconds'.format(int(round((time.time() - start_time)//60)), int(round((time.time() - start_time)%60))))
 
 if __name__ == "__main__":
